@@ -234,7 +234,7 @@ plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
 plt.tight_layout()
-plt.savefig("training_and_validation_loss.png",dpi=120) 
+plt.savefig("training_and_validation_loss2.png",dpi=120) 
 plt.close()
 test_loss, test_acc = model.evaluate(val_ds, verbose=2)
 
