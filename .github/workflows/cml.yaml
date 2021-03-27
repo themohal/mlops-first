@@ -21,10 +21,10 @@ jobs:
           echo "## Images after Data Augumentation" >> report.md
           cml-publish augumented_images.png --md >> report.md
           echo "## Training and Validation Accuracy After Augumentation" >> report.md
-          cml-publush training_and_validation_accuracy2.png --md >>report.md
+          cml-publish training_and_validation_accuracy2.png --md >>report.md
           echo "## Training and Validation Loss After Augumentation" >> report.md
-          cml-publush training_and_validation_loss2.png --md >>report.md
+          cml-publish training_and_validation_loss2.png --md >> report.md
           echo "## Probabilities Image belonging to each class" >> report.md
-          cml-publush all_predictions_probabilities.png --md >>report.md
+          cml-publish all_predictions_probabilities.png --md >> report.md
 
           cml-send-comment report.md
