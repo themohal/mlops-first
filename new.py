@@ -169,5 +169,6 @@
    "source": [
     "model.fit(\n",
     "  train_ds,\n",
-    "  validation_data=val_ds,\n",
-
+    "  validation_data=val_ds,\n"
+   ]
+  }
