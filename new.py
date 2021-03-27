@@ -107,9 +107,9 @@ for images, labels in train_ds.take(1):
     plt.title(class_names[labels[i]])
     plt.axis("off")
     ax.set_title('Images with Labels', fontsize = title_fs)
-    plt.tight_layout()
-    plt.savefig("images_with_labels.png",dpi=120) 
-    plt.close()
+plt.tight_layout()
+plt.savefig("images_with_labels.png",dpi=120) 
+plt.close()
   
 model = tf.keras.Sequential([
   layers.experimental.preprocessing.Rescaling(1./255),
@@ -181,9 +181,9 @@ for images, _ in train_ds.take(1):
         ax = plt.subplot(3, 3, i + 1)
         plt.imshow(augmented_images[0].numpy().astype("uint8"))
         plt.axis("off")
-        plt.tight_layout()
-        plt.savefig("augumented_images.png",dpi=120) 
-        plt.close()
+ plt.tight_layout()
+ plt.savefig("augumented_images.png",dpi=120) 
+ plt.close()
 
 model = tf.keras.Sequential([
     data_augmentation,
