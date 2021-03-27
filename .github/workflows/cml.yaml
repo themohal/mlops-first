@@ -12,7 +12,19 @@ jobs:
         run: |
           pip install -r requirements.txt
           python new.py
+          echo "## Images with Labels" >> report.md
+          cml-publish images_with_labels.png --md >> report.md
+          echo "## Training and Validation Accuracy" >> report.md
+          cml-publish training_and_validation_accuracy.png --md >> report.md
+          echo "## Training and Validation Loss" >> report.md
+          cml-publish training_and_validation_loss.png --md >> report.md
+          echo "## Images after Data Augumentation" >> report.md
+          cml-publish augumented_images.png.png --md >> report.md
+          echo "## Training and Validation Accuracy After Augumentation" >> report.md
+          cml-publush training_and_validation_accuracy2.png --md >>report.md
+          echo "## Training and Validation Loss After Augumentation" >> report.md
+          cml-publush training_and_validation_loss2.png --md >>report.md
+          echo "## Probabilities Image belonging to each class" >> report.md
+          cml-publush all_predictions_probabilities.png --md >>report.md
 
-          cat metrics.txt >> report.md
-          cml-publish confusion_matrix.png --md >> report.md
           cml-send-comment report.md
