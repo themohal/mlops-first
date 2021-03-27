@@ -10,6 +10,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 import matplotlib.pyplot as plt
 import shutil
+import seaborn as sns
 
 train_dir = pathlib.Path('./train')
 image_count = len(list(train_dir.glob('*/*.jpg')))
