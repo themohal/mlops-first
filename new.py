@@ -79,8 +79,35 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
   image_size=(img_height, img_width),
   batch_size=batch_size)
 
+AUTOTUNE = tf.data.experimental.AUTOTUNE
+train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 num_classes = len(train_ds.class_names)
 
+normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1./255)
+normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
+image_batch, labels_batch = next(iter(normalized_ds))
+first_image = image_batch[0]
+# Notice the pixels values are now in `[0,1]`.
+print(np.min(first_image), np.max(first_image))
+
+# image formatting
+axis_fs = 18 #fontsize
+title_fs = 22 #fontsize
+sns.set(style="whitegrid")
+
+plt.figure(figsize=(10, 10))
+for images, labels in train_ds.take(1):
+  for i in range(32):
+    ax = plt.subplot(8,4,i + 1)
+    plt.imshow(images[i].numpy().astype("uint8"))
+    plt.title(class_names[labels[i]])
+    plt.axis("off")
+    ax.set_title('Images with Labels', fontsize = title_fs)
+    plt.tight_layout()
+    plt.savefig("images_with_labels.png",dpi=120) 
+    plt.close()
+  
 model = tf.keras.Sequential([
   layers.experimental.preprocessing.Rescaling(1./255),
   layers.Conv2D(32, 3, activation='relu'),
@@ -97,4 +124,143 @@ model.compile(
   optimizer='adam',
   loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
   metrics=['accuracy'])
-model.fit(train_ds,validation_data=val_ds,epochs=3)
+epochs=1
+model.fit(train_ds,validation_data=val_ds,epochs=epochs)
+
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(epochs) 
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+plt.tight_layout()
+plt.savefig("training_and_validation_accuracy.png",dpi=120) 
+plt.close()
+  
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+plt.tight_layout()
+plt.savefig("training_and_validation_loss.png",dpi=120) 
+plt.close()
+
+test_loss, test_acc = model.evaluate(val_ds, verbose=2)
+
+print('\nTest accuracy:', test_acc)
+
+data_augmentation = tf.keras.Sequential(
+  [
+    tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal", 
+                                                 input_shape=(img_height, 
+                                                              img_width,
+                                                              3)),
+    tf.keras.layers.experimental.preprocessing.RandomRotation(0.1),
+    tf.keras.layers.experimental.preprocessing.RandomZoom(0.1),
+  ]
+)
+
+plt.figure(figsize=(10, 10))
+for images, _ in train_ds.take(1):
+    for i in range(9):
+        augmented_images = data_augmentation(images)
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(augmented_images[0].numpy().astype("uint8"))
+        plt.axis("off")
+        plt.tight_layout()
+        plt.savefig("augumented_images.png",dpi=120) 
+        plt.close()
+
+model = tf.keras.Sequential([
+    data_augmentation,
+    tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
+    tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(num_classes)
+])
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+history = model.fit(
+  train_ds,
+  validation_data=val_ds,
+  epochs=epochs
+)
+
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(epochs)
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+plt.tight_layout()
+plt.savefig("training_and_validation_accuracy2.png",dpi=120) 
+plt.close()
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+plt.tight_layout()
+plt.savefig("training_and_validation_loss.png",dpi=120) 
+plt.close()
+test_loss, test_acc = model.evaluate(val_ds, verbose=2)
+
+print('\nTest accuracy:', test_acc)
+
+glass_url = "https://sc02.alicdn.com/kf/HTB1U6akaOzxK1RkSnaVq6xn9VXac.jpg_350x350.jpg"
+glass_path = tf.keras.utils.get_file('glass_bottle', origin=glass_url)
+
+img = tf.keras.preprocessing.image.load_img(
+    glass_path, target_size=(img_height, img_width)
+)
+img_array = tf.keras.preprocessing.image.img_to_array(img)
+img_array = tf.expand_dims(img_array, 0) # Create a batch
+
+predictions = model.predict(img_array)
+score = tf.nn.softmax(predictions[0])
+
+print(
+    "This image most likely belongs to {} with a {:.2f} percent confidence."
+    .format(class_names[np.argmax(score)], 100 * np.max(score))
+)
+# Simple Bar Plot
+plt.figure(figsize=(7,5))
+plt.xticks(rotation=90)
+plt.bar(class_names,score,align='center',width=1)
+plt.xlabel('Categories')
+plt.ylabel("Values")
+plt.title('Predictions Bar Plot')
+plt.show()
+plt.tight_layout()
+plt.savefig("all_predictions_probabilities.png",dpi=120) 
+plt.close()
