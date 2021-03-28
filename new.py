@@ -126,7 +126,7 @@ model.compile(
   optimizer='adam',
   loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True),
   metrics=['accuracy'])
-epochs = 100
+epochs = 30
 history = model.fit(train_ds,validation_data=val_ds,epochs=epochs)
 
 acc = history.history['accuracy']
